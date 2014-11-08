@@ -102,36 +102,33 @@ var getDataItemWithinInfo = function(str, callback) {
             // create a small corpus for each data item
             // inside each thing or service
             var count = [];
-            // _.each(plugins, function(p) {
-              p = winned.winner;
-              _.each(p.data, function(v, k) {
+            _.each(winned.winner.data, function(v, k) {
 
-                // initialize corpus
-                var corpus = [k];
+              // initialize corpus
+              var corpus = [k];
 
-                // add all aplicable data to corpus
-                _.each(v, function(vv, vk) {
-                  corpus = _.union(
-                    corpus,
-                    vv.toString().toLowerCase().split(" ")
-                  );
-                });
-
-                // lastly, use the stem of each word in the corpus
-                _.each(corpus, function(c, indx) {
-                  corpus[indx] = natural.PorterStemmer.stem(c);
-                });
-
-                // test the corpus
-                if ( _.intersection(corpus, tail).length !== 0 ) {
-                  // corpus is acceptable!
-                  callback && callback(true, type, p, k, p.data[k].value);
-                  callback = null;
-                }
-
-
+              // add all aplicable data to corpus
+              _.each(v, function(vv, vk) {
+                corpus = _.union(
+                  corpus,
+                  vv.toString().toLowerCase().split(" ")
+                );
               });
-            // });
+
+              // lastly, use the stem of each word in the corpus
+              _.each(corpus, function(c, indx) {
+                corpus[indx] = natural.PorterStemmer.stem(c);
+              });
+
+              // test the corpus
+              if ( _.intersection(corpus, tail).length !== 0 ) {
+                // corpus is acceptable!
+                callback && callback(true, type, winned.winner, k, winned.winner.data[k].value);
+                callback = null;
+              }
+
+
+            });
 
 
 
