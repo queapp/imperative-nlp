@@ -8,7 +8,7 @@ var wordnet = new natural.WordNet();
 
 var worddata = require("./data/words");
 
-
+// this code below finds synonyms for the words specified.
 module.exports = function(raw, opts, callback) {
   // set options if none
   opts = opts || {};
