@@ -1,5 +1,5 @@
 {
-  "name": "imperative",
+  "name": "imperative-nlp",
   "version": "0.0.1",
   "description": "nlp processor for que and others",
   "main": "index.js",
