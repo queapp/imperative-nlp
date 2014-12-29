@@ -10,6 +10,9 @@ var host = "http://127.0.0.1:8000";
 module.exports = Parser = function() {
   var root = this;
 
+  // the data to search over
+  this.data = [];
+
   // all possible types
   this.phraseTypes = {
     equality: [/(.*) equals?(?: to)? (.*)/gi],
@@ -20,54 +23,18 @@ module.exports = Parser = function() {
     status: [/is/gi, /status/gi]
   };
 
+  // add data to the parser instance
+  this.addData = function(data) {
+    this.data = data;
+  };
+
   // break down the phrase into a more descriptive, structured form
   this.breakDownPhrase = function(raw, callback) {
     action(raw, {}, function(data) {
 
-      // sample services list
-      // plugins = [
-      //   {
-      //     name: "gmail",
-      //     desc: "Check email remotely",
-      //     id: 0,
-      //     tags: ["email", "gmail", "mail", "webmail"],
-      //     data: {}
-      //   }
-      // ]
-
-      // console.log(data)
-
-      // function() {
-        // var plugins = JSON.parse(body).data;
-        var plugins = [
-          {
-            name: "basementled",
-            desc: "sample plugin",
-            location: "basement",
-            data: {
-              led: {
-                value: false
-              },
-              lamp: {
-                value: false
-              }
-            }
-          },
-          {
-            name: "kitchenled",
-            desc: "sample plugin",
-            location: "kitchen",
-            data: {
-              led: {
-                value: false
-              }
-            }
-          }
-        ];
-
         // try to match the query to a plugin
         var count = [];
-        _.each(plugins, function(p) {
+        _.each(root.data, function(p) {
           inputTotal = 0;
           _.each(data.words, function(word) {
 
@@ -99,7 +66,7 @@ module.exports = Parser = function() {
         // now, find out which plugin won
         var winner = _.max(count);
         if (winner > 1) {
-          var winningPlugin = plugins[count.indexOf(winner)];
+          var winningPlugin = root.data[count.indexOf(winner)];
           // console.log("contest winner had value of", winner, "matching chars", winningPlugin);
 
           // print the winners
@@ -218,8 +185,35 @@ module.exports = Parser = function() {
 
 };
 
-// test the query
+// set up the parser
 p = new Parser();
+p.data = [
+  {
+    name: "basementled",
+    desc: "sample plugin",
+    location: "basement",
+    data: {
+      led: {
+        value: false
+      },
+      lamp: {
+        value: false
+      }
+    }
+  },
+  {
+    name: "kitchenled",
+    desc: "sample plugin",
+    location: "kitchen",
+    data: {
+      led: {
+        value: false
+      }
+    }
+  }
+];
+
+// do the query
 p.matchMeaning(process.argv.slice(2).join(" "), function(thing, operation, dataItem) {
   if (thing) {
     console.log(thing.name, operation, dataItem)
