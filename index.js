@@ -39,8 +39,19 @@ var getCorrectRecord = function(raw, callback) {
       // var plugins = JSON.parse(body).data;
       var plugins = [
         {
-          name: "spark",
+          name: "basementled",
           desc: "sample plugin",
+          location: "basement",
+          data: {
+            led: {
+              value: false
+            }
+          }
+        },
+        {
+          name: "kitchenled",
+          desc: "sample plugin",
+          location: "kitchen",
           data: {
             led: {
               value: false
@@ -84,7 +95,7 @@ var getCorrectRecord = function(raw, callback) {
       var winner = _.max(count);
       if (winner > 1) {
         var winningPlugin = plugins[count.indexOf(winner)];
-        console.log("contest winner had value of", winner, "matching chars", winningPlugin);
+        // console.log("contest winner had value of", winner, "matching chars", winningPlugin);
 
         // print the winners
         callback({
@@ -105,11 +116,11 @@ var getCorrectRecord = function(raw, callback) {
 
 var getDataItemWithinInfo = function(str, callback) {
   getCorrectRecord(str, function(winned) {
-    console.log(typeof winned.words)
+    // console.log(typeof winned.words)
 
     // no matches for the string
     if (!winned) {
-      callback(null, "NOMATCHES");
+      callback(null);
       return
     }
 
@@ -118,43 +129,62 @@ var getDataItemWithinInfo = function(str, callback) {
       _.each(explst, function(exp) {
         m = exp.exec(winned.raw);
         if (m && m.length) {
-            
+
+          // get the operation done (look for the key name
+          // like 'enable')
+          operation = _.invert(typeTests)[
+            _.filter(typeTests, function(tv, tk) {
+              return tv === exp || _.contains(tv, exp);
+            })
+          ];
+
           // ok, got the request type.
           // what exactly are we testing?
-
-          console.log("ABCD", winned)
 
           // go through each data item, and
           // get its value. Then, compare it to
           // the main corpus
 
-          dataitems = [];
+          // create main corpus (stems of all parts of the original phrase)
+          maincorpus = stemArray(winned.raw.split(" "));
+
+          // create place to store ranks
+          dataRanks = [];
+
+          // get data items
           _.each(winned.winner.data, function(v, kk) {
-            dataitems.push( v.label || kk );
-          });
+            item = [v.label || kk];
 
-          // stem the array
-          dataitems = stemArray(dataitems);
-
-          dataitems.forEach(function(item) {
-            // compare it with the important words
-            allparts = stemArray(
-              _.compact(
-                _.union(
-                  [winned.winner.name], 
-                  winned.winner.desc.split(' '), 
-                  winned.winner.tags, 
-                  [winned.winner.location]
-                )
-              )
-            );
-            // common words
-            var common = _.intersection(allparts, query);
-
-            console.log(allparts)
+            // calculate rank for this data item
+            dataRanks.push({
+              name: kk,
+              value: _.intersection(
+                stemArray(item),
+                maincorpus
+              ).length
+            });
 
           });
 
+          // now, calculate the highest 'score'
+          winnerScore = _.max(
+            dataRanks.map(function(item) {
+              return item.value;
+            })
+          );
+
+          // which name equates to that score?
+          dataWinnerName = dataRanks.filter(function(item) {
+            return item.value == winnerScore;
+          });
+
+          // and, do some more formatting
+          if (dataWinnerName.length) {
+            dataWinner = dataWinnerName[0].name
+            callback(winned.winner, operation, dataWinner);
+          } else {
+            console.log("No clue which data item we're talking about")
+          }
 
         }
       });
@@ -171,6 +201,10 @@ var typeTests = {
   equality: [/(.*) equals?(?: to)? (.*)/gi],
   enable: [/(.*) on (?:the )?(.*)/gi, /enable/gi]
 }
-getDataItemWithinInfo(str, function(status, type, plugin, key, value) {
-  console.log(status, type, plugin, key, value)
+getDataItemWithinInfo(str, function(thing, operation, dataItem) {
+  if (thing) {
+    console.log(thing, operation, dataItem)
+  } else {
+    console.log("You need to be more discriptive (your description matched nothing)")
+  }
 })
