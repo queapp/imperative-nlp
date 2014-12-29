@@ -18,9 +18,10 @@ module.exports = Parser = function() {
     equality: [/(.*) equals?(?: to)? (.*)/gi],
     enable: [/(.*) on (?:the )?(.*)/gi, /enable/gi],
     disable: [/(.*) off (?:the )?(.*)/gi, /enable/gi],
+    toggle: [/toggle/gi, /flip/gi],
     status_default_false: [/is (?:.*) ?off/gi, /is (?:.*) ?false/gi],
     status_default_true: [/is (?:.*) ?on/gi, /is (?:.*) ?true/gi],
-    status: [/is/gi, /status/gi]
+    status: [/is/gi, /status/gi, /value/gi]
   };
 
   // add data to the parser instance
