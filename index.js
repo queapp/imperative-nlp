@@ -7,6 +7,17 @@ var host = "http://127.0.0.1:8000";
 
 // the query
 
+// stem a whole array
+var stemArray = function(array) {
+  stems = [];
+  array.forEach(function(i) {
+    stems.push( natural.PorterStemmer.stem(i) );
+  });
+
+  return stems;
+}
+
+
 // finds the record that matches the best, out of all the choices
 var getCorrectRecord = function(raw, callback) {
   action(raw, {}, function(data) {
@@ -22,8 +33,21 @@ var getCorrectRecord = function(raw, callback) {
     //   }
     // ]
 
-    request.get(host+"/things/all", function(error, response, body) {
-      var plugins = JSON.parse(body).data;
+    // console.log(data)
+
+    // function() {
+      // var plugins = JSON.parse(body).data;
+      var plugins = [
+        {
+          name: "spark",
+          desc: "sample plugin",
+          data: {
+            led: {
+              value: false
+            }
+          }
+        }
+      ];
 
       // try to match the query to a plugin
       var count = [];
@@ -32,7 +56,10 @@ var getCorrectRecord = function(raw, callback) {
         _.each(data.words, function(word) {
 
           // find the common synonyms/tags between the plugin and the word
-          var common = _.intersection(word.synonyms, p.tags);
+          // all parts of the plugin (that matter)
+          allparts = _.compact( _.union([p.name], p.desc.split(' '), p.tags, [p.location]));
+          // common words
+          var common = _.intersection(word.synonyms, allparts);
 
           if (common.length) {
             // get the length of the matched words
@@ -49,6 +76,8 @@ var getCorrectRecord = function(raw, callback) {
         // add the total to the collective count
         count.push(inputTotal);
       });
+
+      // console.log(count)
 
 
       // now, find out which plugin won
@@ -69,14 +98,14 @@ var getCorrectRecord = function(raw, callback) {
         // not within threshhold
         callback(null);
       }
-    });
+    // }();
 
   });
 };
 
 var getDataItemWithinInfo = function(str, callback) {
   getCorrectRecord(str, function(winned) {
-    // console.log(winned.words)
+    console.log(typeof winned.words)
 
     // no matches for the string
     if (!winned) {
@@ -89,51 +118,44 @@ var getDataItemWithinInfo = function(str, callback) {
       _.each(explst, function(exp) {
         m = exp.exec(winned.raw);
         if (m && m.length) {
-          // the correct request STEM THE HEAD/TAIL
-          head = m[1].split(" ");
-          tail = m[2].split(" ");
+            
+          // ok, got the request type.
+          // what exactly are we testing?
 
-          // search for tail in the label of each item
-          // var common = _.intersection(word.synonyms, p.tags);
-          request.get(host+"/things/all", function(error, response, body) {
-            var plugins = JSON.parse(body).data;
+          console.log("ABCD", winned)
 
-            // try to match the query to a plugin
-            // create a small corpus for each data item
-            // inside each thing or service
-            var count = [];
-            _.each(winned.winner.data, function(v, k) {
+          // go through each data item, and
+          // get its value. Then, compare it to
+          // the main corpus
 
-              // initialize corpus
-              var corpus = [k];
-
-              // add all aplicable data to corpus
-              _.each(v, function(vv, vk) {
-                corpus = _.union(
-                  corpus,
-                  vv.toString().toLowerCase().split(" ")
-                );
-              });
-
-              // lastly, use the stem of each word in the corpus
-              _.each(corpus, function(c, indx) {
-                corpus[indx] = natural.PorterStemmer.stem(c);
-              });
-
-              // test the corpus
-              if ( _.intersection(corpus, tail).length !== 0 ) {
-                // corpus is acceptable!
-                callback && callback(true, type, winned.winner, k, winned.winner.data[k].value);
-                callback = null;
-              }
-
-
-            });
-
-
-
-            callback && callback(null);
+          dataitems = [];
+          _.each(winned.winner.data, function(v, kk) {
+            dataitems.push( v.label || kk );
           });
+
+          // stem the array
+          dataitems = stemArray(dataitems);
+
+          dataitems.forEach(function(item) {
+            // compare it with the important words
+            allparts = stemArray(
+              _.compact(
+                _.union(
+                  [winned.winner.name], 
+                  winned.winner.desc.split(' '), 
+                  winned.winner.tags, 
+                  [winned.winner.location]
+                )
+              )
+            );
+            // common words
+            var common = _.intersection(allparts, query);
+
+            console.log(allparts)
+
+          });
+
+
         }
       });
     });
