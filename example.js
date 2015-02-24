@@ -27,9 +27,9 @@ p.data = [
 ];
 
 // do the query
-p.matchMeaning(process.argv.slice(2).join(" "), function(thing, operation, dataItem) {
+p.matchMeaning(process.argv.slice(2).join(" "), function(thing, operation, dataItem, value) {
   if (thing) {
-    console.log(thing.name, operation, dataItem)
+    console.log(thing.name, operation, dataItem, value)
   } else if (!thing) {
     console.log("You need to be more discriptive (your description matched nothing)");
   } else if (!dataItem) {

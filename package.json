@@ -1,6 +1,6 @@
 {
   "name": "imperative-nlp",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "nlp processor for que and others",
   "main": "index.js",
   "scripts": {
@@ -16,10 +16,30 @@
     "request": "^2.45.0",
     "underscore": "latest"
   },
-  "author": "Ryan Gaus <rsg1egoman@gmail.com>",
+  "author": {
+    "name": "Ryan Gaus",
+    "email": "rsg1egoman@gmail.com"
+  },
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/queapp/imperative-nlp.git"
-  }
+  "gitHead": "527eeac951bc13396e3c400cb5f1591cf87ded65",
+  "_id": "imperative-nlp@0.0.2",
+  "_shasum": "d9eb47ad68bb97c3d270f06c612f45295ea01f47",
+  "_from": "imperative-nlp@0.0.2",
+  "_npmVersion": "2.0.0-beta.0",
+  "_npmUser": {
+    "name": "1egoman",
+    "email": "rsg1egoman@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "1egoman",
+      "email": "rsg1egoman@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "d9eb47ad68bb97c3d270f06c612f45295ea01f47",
+    "tarball": "http://registry.npmjs.org/imperative-nlp/-/imperative-nlp-0.0.2.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/imperative-nlp/-/imperative-nlp-0.0.2.tgz"
 }

@@ -21,12 +21,32 @@ module.exports = Parser = function() {
     toggle: [/toggle/gi, /flip/gi],
     status_default_false: [/is (?:.*) ?off/gi, /is (?:.*) ?false/gi],
     status_default_true: [/is (?:.*) ?on/gi, /is (?:.*) ?true/gi],
-    status: [/is/gi, /status/gi, /value/gi]
+    status: [/is/gi, /status/gi, /value/gi, /state/gi],
+    set: [/set (.*)(?: to)? (.+)/gi]
   };
+
+  // possible ways a vallue can be stated
+  this.valueWays = [
+    /to (.*)/gi
+  ]
 
   // add data to the parser instance
   this.addData = function(data) {
     this.data = data;
+  };
+
+  // try and locate a value to set a specified thing to
+  this.getValue = function(data, callback) {
+    this.valueWays.forEach(function(v) {
+      matches = v.exec(data.raw);
+      if (matches && matches.length) {
+        value = parseFloat(matches[1]) || matches[1];
+
+        callback(value);
+        return;
+      };
+    });
+    callback(null);
   };
 
   // break down the phrase into a more descriptive, structured form
@@ -158,9 +178,12 @@ module.exports = Parser = function() {
               // note: if there are mutiple winners with the same score, then
               // the first will be chosen
               dataWinner = dataWinnerName[0].name
+              // one last thing: look for a value
+              value = root.getValue(winned, function(value) {
 
-              // Finally, callback!
-              callback(winned.winner, operation, dataWinner);
+                // Finally, callback!
+                callback(winned.winner, operation, dataWinner, value);
+              });
             } else {
               callback(winned.winner, operation, null);
             }
